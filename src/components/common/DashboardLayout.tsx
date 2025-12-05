@@ -25,7 +25,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                         <div className="flex items-center">
                             <div className="ml-3 relative flex items-center gap-4">
                                 <span className="text-gray-700 text-sm">
-                                    Hola, {user?.name} {user?.apellido}
+                                    Hola, {user?.name}
                                 </span>
                                 <button
                                     onClick={logout}

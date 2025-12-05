@@ -23,7 +23,8 @@ export const authService = {
     },
 
     getMe: async (): Promise<User> => {
-        return await apiClient.get<User>(`${AUTH_BASE}/me`);
+        const response = await apiClient.get<{ user: User }>(`${AUTH_BASE}/me`);
+        return response.user;
     },
 
     loginWithGoogle: () => {
