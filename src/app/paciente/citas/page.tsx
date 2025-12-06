@@ -11,11 +11,11 @@ import { PatientService } from '@/services/patientService';
 import { AppointmentService } from '@/services/appointmentService';
 import type { Cita, EstadoCita } from '@/types/patient';
 
-const estadoTabs: { value: '' | EstadoCita; label: string }[] = [
+const estadoTabs: { value: '' | string; label: string }[] = [
     { value: '', label: 'Todas' },
     { value: 'pendiente', label: 'Pendientes' },
-    { value: 'aceptada', label: 'Aceptadas' },
-    { value: 'rechazada', label: 'Rechazadas' },
+    { value: 'confirmada', label: 'Confirmadas' },
+    { value: 'completada', label: 'Completadas' },
     { value: 'cancelada', label: 'Canceladas' },
 ];
 
@@ -31,8 +31,19 @@ export default function AppointmentsPage() {
 
     const loadCitas = async () => {
         try {
+            const userStr = localStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
+            const pacienteId = user?.paciente_id;
+
+            if (!pacienteId) {
+                console.error('No se pudo obtener el ID del paciente');
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             const response = await PatientService.getCitas(
+                pacienteId,
                 estadoFiltro ? { estado: estadoFiltro } : undefined
             );
             if (response.success && response.data) {
@@ -65,11 +76,43 @@ export default function AppointmentsPage() {
         }
     };
 
+    const handleSaveEdit = async (citaId: number, nuevoMotivo: string) => {
+        try {
+            const response = await AppointmentService.update(citaId, {
+                motivo: nuevoMotivo
+            });
+
+            if (response.success) {
+                // Actualizar la lista localmente
+                setCitas((prev) =>
+                    prev.map((c) => (c.id === citaId ? { ...c, motivo: nuevoMotivo } : c))
+                );
+            } else {
+                alert('No se pudo actualizar la cita');
+            }
+        } catch (error) {
+            console.error('Error al actualizar cita:', error);
+            alert('Error al guardar los cambios');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
             <div className="mx-auto max-w-6xl">
-                {/* Header */}
-                <div className="mb-8">
+                {/* Header con botón de volver */}
+                <div className="mb-8 relative">
+                    <div className="absolute right-0 top-0 hidden md:block">
+                        <a href="/paciente/dashboard" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+                            Volver al Dashboard
+                        </a>
+                    </div>
+                    {/* Botón visible solo en móvil */}
+                    <div className="md:hidden mb-4">
+                        <a href="/paciente/dashboard" className="text-sm text-gray-500 hover:text-blue-600 inline-flex items-center gap-1">
+                            ← Volver al Dashboard
+                        </a>
+                    </div>
+
                     <h1 className="text-4xl font-bold text-gray-900">Mis Citas</h1>
                     <p className="mt-2 text-lg text-gray-600">
                         Gestiona y revisa el estado de tus citas médicas
@@ -138,6 +181,7 @@ export default function AppointmentsPage() {
                                 key={cita.id}
                                 cita={cita}
                                 onCancel={handleCancel}
+                                onSaveEdit={handleSaveEdit}
                                 loading={cancelingId === cita.id}
                             />
                         ))}

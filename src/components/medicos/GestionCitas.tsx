@@ -18,6 +18,7 @@ interface Cita {
 
 interface GestionCitasProps {
   medicoId: number;
+  onUpdate?: () => void;
 }
 
 const estadoColores: Record<string, string> = {
@@ -34,7 +35,7 @@ const estadoTexto: Record<string, string> = {
   cancelada: 'Cancelada',
 };
 
-export default function GestionCitas({ medicoId }: GestionCitasProps) {
+export default function GestionCitas({ medicoId, onUpdate }: GestionCitasProps) {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +69,7 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
     try {
       await actualizarCita(citaId, nuevoEstado as any);
       await cargarCitas();
+      if (onUpdate) onUpdate();
     } catch (err) {
       setError('Error al actualizar cita');
       console.error(err);
@@ -150,22 +152,47 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
                 {cita.telefono && <p><strong>Teléfono:</strong> {cita.telefono}</p>}
               </div>
 
-              {/* Cambiar estado */}
-              <div className="flex gap-2 flex-wrap">
-                {['pendiente', 'confirmada', 'completada', 'cancelada']
-                  .filter(estado => estado !== cita.estado)
-                  .map(estado => (
+              {/* Acciones según estado */}
+              <div className="flex gap-2 flex-wrap mt-4 border-t pt-3">
+                {cita.estado === 'pendiente' && (
+                  <>
                     <button
-                      key={estado}
-                      onClick={() => cambiarEstado(cita.id, estado)}
+                      onClick={() => cambiarEstado(cita.id, 'confirmada')}
                       disabled={actualizando === cita.id}
-                      className={`px-3 py-1 rounded text-sm font-medium transition capitalize
-                        ${estadoColores[estado]} hover:opacity-80 disabled:opacity-50
-                      `}
+                      className="px-3 py-1.5 rounded text-sm font-medium bg-green-100 text-green-700 hover:bg-green-200 transition disabled:opacity-50"
                     >
-                      {actualizando === cita.id ? 'Actualizando...' : `Marcar como ${estadoTexto[estado]}`}
+                      Confirmar Cita
                     </button>
-                  ))}
+                    <button
+                      onClick={() => cambiarEstado(cita.id, 'cancelada')}
+                      disabled={actualizando === cita.id}
+                      className="px-3 py-1.5 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                )}
+
+                {cita.estado === 'confirmada' && (
+                  <>
+                    <button
+                      onClick={() => cambiarEstado(cita.id, 'completada')}
+                      disabled={actualizando === cita.id}
+                      className="px-3 py-1.5 rounded text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 transition disabled:opacity-50"
+                    >
+                      Marcar Completada
+                    </button>
+                    <button
+                      onClick={() => cambiarEstado(cita.id, 'cancelada')}
+                      disabled={actualizando === cita.id}
+                      className="px-3 py-1.5 rounded text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                  </>
+                )}
+
+                {/* Si está completa o cancelada no mostramos acciones por defecto */}
               </div>
             </div>
           ))}

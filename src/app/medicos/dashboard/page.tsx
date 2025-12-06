@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import DisponibilidadForm from '@/components/medicos/DisponibilidadForm';
 import ListaDisponibilidades from '@/components/medicos/ListaDisponibilidades';
 import GestionCitas from '@/components/medicos/GestionCitas';
-import { getMedicoById } from '@/services/medicoService';
+import { getMedicoById, actualizarMedico } from '@/services/medicoService';
 import { useDisponibilidades } from '@/hooks/useDisponibilidades';
 
 interface Medico {
@@ -33,6 +33,15 @@ export default function DoctorDashboard() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [mounted, setMounted] = useState(false);
 
+    // Estado para edición de perfil
+    const [isEditing, setIsEditing] = useState(false);
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [formData, setFormData] = useState({
+        telefono: '',
+        especialidad: '',
+        descripcion: ''
+    });
+
     // Hook para obtener disponibilidades reales
     const { disponibilidades } = useDisponibilidades(user?.medico_id || null, refreshKey);
 
@@ -46,6 +55,16 @@ export default function DoctorDashboard() {
         }
     }, [user?.medico_id, mounted, authLoading]);
 
+    useEffect(() => {
+        if (medico && user) {
+            setFormData({
+                telefono: user.telefono || '',
+                especialidad: medico.especialidad || '',
+                descripcion: medico.descripcion || ''
+            });
+        }
+    }, [medico, user]);
+
     const cargarMedico = async () => {
         if (!user?.medico_id) {
             setError('No se encontró medico_id');
@@ -53,19 +72,39 @@ export default function DoctorDashboard() {
             return;
         }
         try {
-            const data = await getMedicoById(user.medico_id);
-            setMedico(data);
+            const response = await getMedicoById(user.medico_id);
+            // Ajuste para extraer los datos reales si vienen envueltos en "data"
+            const medicoData = response.data || response;
+
+            setMedico(medicoData);
             setError(null);
         } catch (err: any) {
+            console.error('Error cargando médico:', err);
             setError(`Error: ${err.message || 'No se pudo cargar el médico'}`);
         } finally {
             setLoading(false);
+            setRefreshKey(prev => prev + 1);
         }
     };
 
     const handleDisponibilidadChanged = () => {
-        setRefreshKey(prev => prev + 1);
         cargarMedico();
+    };
+
+    const handleSaveProfile = async () => {
+        if (!user?.medico_id) return;
+        try {
+            setSavingProfile(true);
+            await actualizarMedico(user.medico_id, formData);
+            await cargarMedico(); // Recargar datos
+            setIsEditing(false);
+            alert('Perfil actualizado correctamente');
+        } catch (error) {
+            console.error(error);
+            alert('Error al actualizar perfil');
+        } finally {
+            setSavingProfile(false);
+        }
     };
 
     if (!mounted) {
@@ -96,8 +135,6 @@ export default function DoctorDashboard() {
                 <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                         <p className="text-red-600 font-semibold mb-4">{error}</p>
-                        <p className="text-gray-600 mb-4">User ID: {user?.userId}</p>
-                        <p className="text-gray-600">Medico ID: {user?.medico_id}</p>
                         <button
                             onClick={() => cargarMedico()}
                             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -133,7 +170,7 @@ export default function DoctorDashboard() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" key={refreshKey}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-blue-600">{medico?.citas?.length || 0}</div>
                         <div className="text-gray-600">Citas Totales</div>
@@ -190,27 +227,92 @@ export default function DoctorDashboard() {
                     {activeTab === 'resumen' && (
                         <div className="space-y-6">
                             <div className="bg-white rounded-lg shadow p-6">
-                                <h2 className="text-2xl font-bold mb-4">Información Profesional</h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-sm font-semibold text-gray-600">Email</label>
-                                        <p className="text-lg">{user?.email}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-semibold text-gray-600">Teléfono</label>
-                                        <p className="text-lg">{user?.telefono}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-semibold text-gray-600">Especialidad</label>
-                                        <p className="text-lg">{medico?.especialidad}</p>
-                                    </div>
-                                    {medico?.descripcion && (
-                                        <div>
-                                            <label className="text-sm font-semibold text-gray-600">Descripción</label>
-                                            <p className="text-lg">{medico.descripcion}</p>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-2xl font-bold">Información Profesional</h2>
+                                    {!isEditing ? (
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5"
+                                        >
+                                            Editar Información
+                                        </button>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setIsEditing(false)}
+                                                className="text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium rounded-lg text-sm px-4 py-2"
+                                            >
+                                                Cancelar
+                                            </button>
+                                            <button
+                                                onClick={handleSaveProfile}
+                                                disabled={savingProfile}
+                                                className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-lg text-sm px-4 py-2 disabled:opacity-50"
+                                            >
+                                                {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
+                                            </button>
                                         </div>
                                     )}
                                 </div>
+
+                                {isEditing ? (
+                                    <div className="space-y-4 animate-in fade-in">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                                            <input
+                                                type="text"
+                                                value={formData.telefono}
+                                                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Especialidad</label>
+                                            <select
+                                                value={formData.especialidad}
+                                                onChange={(e) => setFormData({ ...formData, especialidad: e.target.value })}
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                            >
+                                                <option value="">Seleccione una especialidad</option>
+                                                <option value="Medicina General">Medicina General</option>
+                                                <option value="Cardiología">Cardiología</option>
+                                                <option value="Pediatría">Pediatría</option>
+                                                <option value="Dermatología">Dermatología</option>
+                                                <option value="Ginecología">Ginecología</option>
+                                                <option value="Traumatología">Traumatología</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción Profesional</label>
+                                            <textarea
+                                                value={formData.descripcion}
+                                                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                rows={4}
+                                                placeholder="Describa su experiencia y enfoque..."
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-sm font-semibold text-gray-600">Email</label>
+                                            <p className="text-lg">{user?.email}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-semibold text-gray-600">Teléfono</label>
+                                            <p className="text-lg">{medico?.usuario?.telefono || user?.telefono || 'No especificado'}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-semibold text-gray-600">Especialidad</label>
+                                            <p className="text-lg">{medico?.especialidad}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-semibold text-gray-600">Descripción</label>
+                                            <p className="text-lg text-gray-700">{medico?.descripcion || 'Sin descripción'}</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
@@ -239,7 +341,10 @@ export default function DoctorDashboard() {
                     )}
 
                     {activeTab === 'citas' && user?.medico_id && (
-                        <GestionCitas medicoId={user.medico_id} />
+                        <GestionCitas
+                            medicoId={user.medico_id}
+                            onUpdate={handleDisponibilidadChanged}
+                        />
                     )}
                 </div>
             </div>

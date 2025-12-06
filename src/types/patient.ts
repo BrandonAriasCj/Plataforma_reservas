@@ -1,7 +1,3 @@
-/**
- * TypeScript Types for Patient Module
- * Definiciones de tipos para paciente, citas y médicos
- */
 
 // ==================== USUARIO ====================
 export interface Usuario {
@@ -63,15 +59,16 @@ export interface Medico {
 }
 
 // ==================== CITA ====================
-export type EstadoCita = 'pendiente' | 'aceptada' | 'rechazada' | 'cancelada';
+export type EstadoCita = 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'aceptada' | 'rechazada';
 
 export interface Cita {
     id: number;
     paciente_id: number;
     medico_id: number;
-    fecha: string;
-    hora_inicio: string;
-    hora_fin: string;
+    fecha_hora: string; // ISO DateTime
+    fecha?: string;
+    hora_inicio?: string;
+    hora_fin?: string;
     estado: EstadoCita;
     motivo?: string;
     comentario_medico?: string;

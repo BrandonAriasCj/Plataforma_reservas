@@ -44,9 +44,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             apiClient.setToken(token);
             const userData = await authService.getMe();
             setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
         } catch (error) {
             console.error('Failed to fetch user', error);
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
             setUser(null);
         } finally {
             setIsLoading(false);
@@ -64,6 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.log('Login response:', response);
             if (response.token) {
                 localStorage.setItem('auth_token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
                 apiClient.setToken(response.token);
                 console.log('User data set:', response.user);
                 setUser(response.user);
@@ -88,6 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const response = await authService.registerPatient(data);
             if (response.token) {
                 localStorage.setItem('auth_token', response.token);
+                localStorage.setItem('user', JSON.stringify(response.user));
                 apiClient.setToken(response.token);
                 setUser(response.user);
                 router.push('/paciente/dashboard');
@@ -118,6 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = () => {
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
         setUser(null);
         router.push('/auth/login');
     };
