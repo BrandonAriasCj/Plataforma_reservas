@@ -28,7 +28,7 @@ export default function EditarPerfilMedico() {
   const cargarMedico = async () => {
     if (!user?.id) return;
     try {
-      const data = await getMedicoById(user.id);
+      const data = await getMedicoById(parseInt(user.id));
       setMedico(data as Medico);
       setFormData({
         nombre: data.usuario.nombre,
