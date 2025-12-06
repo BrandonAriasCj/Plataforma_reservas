@@ -10,6 +10,20 @@ const apiClient = axios.create({
   },
 });
 
+// Tipo Medico
+export interface Medico {
+  id: number;
+  especialidad: string;
+  descripcion?: string;
+  usuario: {
+    id: number;
+    email: string;
+    nombre: string;
+    apellido: string;
+    telefono: string;
+  };
+}
+
 // Interceptor para errores
 apiClient.interceptors.response.use(
   (response) => response,
