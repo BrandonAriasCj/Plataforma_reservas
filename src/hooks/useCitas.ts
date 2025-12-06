@@ -59,7 +59,7 @@ export const useActualizarCita = () => {
   const actualizar = async (citaId: number, estado: EstadoCita) => {
     try {
       setCargando(true);
-      const result = await actualizarCita(citaId, { estado });
+      const result = await actualizarCita(citaId, estado);
       setError(null);
       return result;
     } catch (err) {

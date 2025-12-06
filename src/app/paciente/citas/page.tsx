@@ -11,7 +11,7 @@ import { PatientService } from '@/services/patientService';
 import { AppointmentService } from '@/services/appointmentService';
 import type { Cita, EstadoCita } from '@/types/patient';
 
-const estadoTabs: { value: '' | string; label: string }[] = [
+const estadoTabs: { value: '' | EstadoCita; label: string }[] = [
     { value: '', label: 'Todas' },
     { value: 'pendiente', label: 'Pendientes' },
     { value: 'confirmada', label: 'Confirmadas' },

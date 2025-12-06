@@ -162,8 +162,8 @@ export default function PatientDashboard() {
                                 <div key={cita.id} className="flex flex-col md:flex-row md:items-center justify-between rounded-xl border border-gray-200 p-5 transition-all hover:bg-blue-50/50 hover:border-blue-200 group">
                                     <div className="flex items-start gap-5">
                                         <div className="hidden md:flex flex-col items-center justify-center h-16 w-16 rounded-xl bg-blue-100 text-blue-700 font-bold shadow-sm">
-                                            <span className="text-xs uppercase">{new Date(cita.fecha_hora || cita.fecha).toLocaleString('es-ES', { month: 'short' })}</span>
-                                            <span className="text-xl">{new Date(cita.fecha_hora || cita.fecha).getDate()}</span>
+                                            <span className="text-xs uppercase">{new Date(cita.fecha_hora || cita.fecha || new Date()).toLocaleString('es-ES', { month: 'short' })}</span>
+                                            <span className="text-xl">{new Date(cita.fecha_hora || cita.fecha || new Date()).getDate()}</span>
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
@@ -180,7 +180,7 @@ export default function PatientDashboard() {
                                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
-                                                    {new Date(cita.fecha_hora || cita.fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(cita.fecha_hora || cita.fecha || new Date()).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                                 <span className="hidden sm:inline text-gray-300">|</span>
                                                 <span className="flex items-center gap-1">

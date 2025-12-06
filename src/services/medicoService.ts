@@ -24,6 +24,33 @@ export interface Medico {
   };
 }
 
+// Tipo Cita
+export interface Cita {
+  id: number;
+  medico_id: number;
+  paciente_id: number;
+  fecha: string;
+  hora: string;
+  estado: 'pendiente' | 'confirmada' | 'cancelada' | 'completada';
+  motivo: string;
+  fecha_creacion?: string;
+}
+
+// Tipo DiaCalendario
+export interface DiaCalendario {
+  fecha: string;
+  disponible: boolean;
+  citas?: number;
+}
+
+// Tipo Disponibilidad
+export interface Disponibilidad {
+  id: number;
+  medico_id: number;
+  fecha: string;
+  disponible: boolean;
+}
+
 // Interceptor para errores
 apiClient.interceptors.response.use(
   (response) => response,

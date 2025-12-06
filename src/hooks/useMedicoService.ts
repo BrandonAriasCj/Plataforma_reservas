@@ -107,7 +107,7 @@ export const useMedicoCitas = (medicoId: number, filtro?: string) => {
   return { citas, loading, error };
 };
 
-export const useMedicoCalendario = (medicoId: number, mes?: number, año?: number) => {
+export const useMedicoCalendario = (medicoId: number, mes?: number, ano?: number) => {
   const [dias, setDias] = useState<DiaCalendario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +118,7 @@ export const useMedicoCalendario = (medicoId: number, mes?: number, año?: numbe
         setLoading(true);
         const data = await getCalendario(medicoId, {
           mes: mes || new Date().getMonth() + 1,
-          año: año || new Date().getFullYear(),
+          ano: ano || new Date().getFullYear(),
         });
         setDias((data.dias || []) as DiaCalendario[]);
         setError(null);
@@ -133,12 +133,12 @@ export const useMedicoCalendario = (medicoId: number, mes?: number, año?: numbe
     if (medicoId) {
       cargarCalendario();
     }
-  }, [medicoId, mes, año]);
+  }, [medicoId, mes, ano]);
 
   return { dias, loading, error };
 };
 
-export const useMedicoDisponibilidades = (medicoId: number, mes?: number, año?: number) => {
+export const useMedicoDisponibilidades = (medicoId: number, fechaInicio?: string, fechaFin?: string) => {
   const [disponibilidades, setDisponibilidades] = useState<Disponibilidad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,8 +148,8 @@ export const useMedicoDisponibilidades = (medicoId: number, mes?: number, año?:
       try {
         setLoading(true);
         const data = await getDisponibilidades(medicoId, {
-          mes: mes,
-          año: año,
+          fechaInicio,
+          fechaFin,
         });
         setDisponibilidades((data.disponibilidades || []) as Disponibilidad[]);
         setError(null);
@@ -164,7 +164,7 @@ export const useMedicoDisponibilidades = (medicoId: number, mes?: number, año?:
     if (medicoId) {
       cargarDisponibilidades();
     }
-  }, [medicoId, mes, año]);
+  }, [medicoId, fechaInicio, fechaFin]);
 
   return { disponibilidades, loading, error };
 };
