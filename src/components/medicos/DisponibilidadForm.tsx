@@ -54,14 +54,20 @@ export default function DisponibilidadForm({ medicoId, onActualizado }: Disponib
       <h2 className="text-2xl font-bold mb-6">Marcar como No Disponible</h2>
 
       {exito && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-          ✓ {mensajeExito}
+        <div className="mb-4 p-4 bg-green-50 border border-green-400 text-green-700 rounded flex items-center gap-2">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {mensajeExito}
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          ✗ {error}
+        <div className="mb-4 p-4 bg-red-50 border border-red-400 text-red-700 rounded flex items-center gap-2">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
         </div>
       )}
 
@@ -139,9 +145,12 @@ export default function DisponibilidadForm({ medicoId, onActualizado }: Disponib
         <button
           type="submit"
           disabled={cargando}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded transition"
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded transition flex items-center justify-center gap-2"
         >
-          {cargando ? 'Guardando...' : 'Guardar marcado'}
+          {cargando && (
+            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+          )}
+          {cargando ? 'Guardando...' : 'Marcar como NO disponible'}
         </button>
       </form>
     </div>

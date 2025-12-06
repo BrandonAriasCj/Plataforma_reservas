@@ -168,7 +168,7 @@ export const getCalendario = async (
 export const eliminarDiaNoDisponible = async (disponibilidadId: number) => {
   try {
     const response = await apiClient.delete(
-      `/disponibilidad/${disponibilidadId}`
+      `/medicos/disponibilidad/${disponibilidadId}`
     );
     return response.data;
   } catch (error) {
@@ -204,9 +204,9 @@ export const eliminarRangoNoDisponible = async (
 /**
  * GET - Obtener citas de un médico
  */
-export const getCitasMedico = async (medicoId: number) => {
+export const getCitasMedico = async (medicoId: number, params?: { estado?: string }) => {
   try {
-    const response = await apiClient.get(`/medicos/${medicoId}/citas`);
+    const response = await apiClient.get(`/medicos/${medicoId}/citas`, { params });
     return response.data;
   } catch (error) {
     console.error('Error al obtener citas del médico:', error);

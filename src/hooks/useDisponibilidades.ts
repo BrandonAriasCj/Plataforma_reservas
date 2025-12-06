@@ -37,7 +37,7 @@ export interface CalendarioResponse {
 /**
  * Hook para obtener disponibilidades de un médico
  */
-export const useDisponibilidades = (medicoId: number | null, mes?: number, ano?: number) => {
+export const useDisponibilidades = (medicoId: number | null, refreshKey?: number, mes?: number, ano?: number) => {
   const [disponibilidades, setDisponibilidades] = useState<DisponibilidadDetalle[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export const useDisponibilidades = (medicoId: number | null, mes?: number, ano?:
     };
 
     cargar();
-  }, [medicoId, mes, ano]);
+  }, [medicoId, refreshKey, mes, ano]);
 
   return { disponibilidades, cargando, error };
 };

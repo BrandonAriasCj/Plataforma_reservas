@@ -15,6 +15,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
     const router = useRouter();
 
     const homeLink = user?.roleId === 2 ? '/medicos/dashboard' : '/paciente/dashboard';
+    const isPaciente = user?.roleId === 1;
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -33,6 +34,23 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                                 >
                                     Inicio
                                 </Link>
+
+                                {isPaciente && (
+                                    <>
+                                        <Link
+                                            href="/paciente/citas"
+                                            className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                                        >
+                                            Mis Citas
+                                        </Link>
+                                        <Link
+                                            href="/paciente/reservar"
+                                            className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                                        >
+                                            Reservar Cita
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center">

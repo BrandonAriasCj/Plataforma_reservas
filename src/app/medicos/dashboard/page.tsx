@@ -4,22 +4,24 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/common/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
 import DisponibilidadForm from '@/components/medicos/DisponibilidadForm';
+import ListaDisponibilidades from '@/components/medicos/ListaDisponibilidades';
 import GestionCitas from '@/components/medicos/GestionCitas';
 import { getMedicoById } from '@/services/medicoService';
+import { useDisponibilidades } from '@/hooks/useDisponibilidades';
 
 interface Medico {
-  id: number;
-  usuario_id: number;
-  especialidad: string;
-  descripcion?: string;
-  usuario: {
-    nombre: string;
-    apellido: string;
-    email: string;
-    telefono: string;
-  };
-  disponibilidades: any[];
-  citas: any[];
+    id: number;
+    usuario_id: number;
+    especialidad: string;
+    descripcion?: string;
+    usuario: {
+        nombre: string;
+        apellido: string;
+        email: string;
+        telefono: string;
+    };
+    disponibilidades: any[];
+    citas: any[];
 }
 
 export default function DoctorDashboard() {
@@ -30,6 +32,9 @@ export default function DoctorDashboard() {
     const [activeTab, setActiveTab] = useState<'resumen' | 'disponibilidad' | 'citas'>('resumen');
     const [refreshKey, setRefreshKey] = useState(0);
     const [mounted, setMounted] = useState(false);
+
+    // Hook para obtener disponibilidades reales
+    const { disponibilidades } = useDisponibilidades(user?.medico_id || null, refreshKey);
 
     useEffect(() => {
         setMounted(true);
@@ -48,13 +53,10 @@ export default function DoctorDashboard() {
             return;
         }
         try {
-            console.log('Cargando médico con ID:', user.medico_id);
             const data = await getMedicoById(user.medico_id);
-            console.log('Datos del médico:', data);
             setMedico(data);
             setError(null);
         } catch (err: any) {
-            console.error('Error al cargar médico:', err);
             setError(`Error: ${err.message || 'No se pudo cargar el médico'}`);
         } finally {
             setLoading(false);
@@ -96,7 +98,7 @@ export default function DoctorDashboard() {
                         <p className="text-red-600 font-semibold mb-4">{error}</p>
                         <p className="text-gray-600 mb-4">User ID: {user?.userId}</p>
                         <p className="text-gray-600">Medico ID: {user?.medico_id}</p>
-                        <button 
+                        <button
                             onClick={() => cargarMedico()}
                             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                         >
@@ -131,7 +133,7 @@ export default function DoctorDashboard() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" key={refreshKey}>
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-blue-600">{medico?.citas?.length || 0}</div>
                         <div className="text-gray-600">Citas Totales</div>
@@ -144,7 +146,7 @@ export default function DoctorDashboard() {
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="text-3xl font-bold text-red-600">
-                            {medico?.disponibilidades?.length || 0}
+                            {disponibilidades.length}
                         </div>
                         <div className="text-gray-600">Días No Disponibles</div>
                     </div>
@@ -155,31 +157,28 @@ export default function DoctorDashboard() {
                     <div className="flex gap-4">
                         <button
                             onClick={() => setActiveTab('resumen')}
-                            className={`px-4 py-3 font-medium border-b-2 transition ${
-                                activeTab === 'resumen'
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                            }`}
+                            className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === 'resumen'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                }`}
                         >
                             Resumen
                         </button>
                         <button
                             onClick={() => setActiveTab('disponibilidad')}
-                            className={`px-4 py-3 font-medium border-b-2 transition ${
-                                activeTab === 'disponibilidad'
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                            }`}
+                            className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === 'disponibilidad'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                }`}
                         >
                             Disponibilidad
                         </button>
                         <button
                             onClick={() => setActiveTab('citas')}
-                            className={`px-4 py-3 font-medium border-b-2 transition ${
-                                activeTab === 'citas'
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                            }`}
+                            className={`px-4 py-3 font-medium border-b-2 transition ${activeTab === 'citas'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-600 hover:text-gray-900'
+                                }`}
                         >
                             Citas
                         </button>
@@ -226,10 +225,17 @@ export default function DoctorDashboard() {
                     )}
 
                     {activeTab === 'disponibilidad' && user?.medico_id && (
-                        <DisponibilidadForm 
-                            medicoId={user.medico_id} 
-                            onActualizado={handleDisponibilidadChanged}
-                        />
+                        <div className="space-y-6">
+                            <DisponibilidadForm
+                                medicoId={user.medico_id}
+                                onActualizado={handleDisponibilidadChanged}
+                            />
+                            <ListaDisponibilidades
+                                medicoId={user.medico_id}
+                                refreshKey={refreshKey}
+                                onActualizado={handleDisponibilidadChanged}
+                            />
+                        </div>
                     )}
 
                     {activeTab === 'citas' && user?.medico_id && (

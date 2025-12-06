@@ -5,16 +5,15 @@ import { getCitasMedico, actualizarCita } from '@/services/medicoService';
 
 interface Cita {
   id: number;
-  fecha_hora: string;
-  motivo: string;
+  fecha_hora?: string;
+  fecha?: string;
+  motivo?: string;
   estado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada';
-  paciente: {
-    usuario: {
-      nombre: string;
-      apellido: string;
-      email: string;
-    };
-  };
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  telefono?: string;
+  paciente_id?: number;
 }
 
 interface GestionCitasProps {
@@ -48,14 +47,17 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
 
   const cargarCitas = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = filtro ? { estado: filtro } : undefined;
       const response = await getCitasMedico(medicoId, params);
-      setCitas(response.citas);
-      setError(null);
-    } catch (err) {
-      setError('Error al cargar citas');
-      console.error(err);
+      // El backend devuelve { total, data }
+      const citasData = response.data || response.citas || response || [];
+      setCitas(Array.isArray(citasData) ? citasData : []);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || err?.message || 'Error al cargar citas';
+      setError(errorMsg);
+      setCitas([]);
     } finally {
       setLoading(false);
     }
@@ -102,9 +104,8 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
           <button
             key={estado}
             onClick={() => setFiltro(estado)}
-            className={`px-4 py-2 rounded capitalize ${
-              filtro === estado ? 'bg-blue-600 text-white' : 'bg-gray-200'
-            }`}
+            className={`px-4 py-2 rounded capitalize ${filtro === estado ? 'bg-blue-600 text-white' : 'bg-gray-200'
+              }`}
           >
             {estadoTexto[estado]}
           </button>
@@ -113,9 +114,20 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
 
       {/* Lista de citas */}
       {loading ? (
-        <div className="text-center py-8">Cargando citas...</div>
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Cargando citas...</p>
+        </div>
       ) : citas.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">No hay citas disponibles</div>
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No hay citas</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            {filtro ? `No hay citas ${estadoTexto[filtro]?.toLowerCase() || filtro}` : 'Aún no tienes citas programadas'}
+          </p>
+        </div>
       ) : (
         <div className="space-y-4">
           {citas.map(cita => (
@@ -123,9 +135,9 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-bold text-lg">
-                    {cita.paciente.usuario.nombre} {cita.paciente.usuario.apellido}
+                    {cita.nombre || 'N/A'} {cita.apellido || ''}
                   </h3>
-                  <p className="text-sm text-gray-600">{cita.paciente.usuario.email}</p>
+                  <p className="text-sm text-gray-600">{cita.email || 'Sin email'}</p>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${estadoColores[cita.estado]}`}>
                   {estadoTexto[cita.estado]}
@@ -133,8 +145,9 @@ export default function GestionCitas({ medicoId }: GestionCitasProps) {
               </div>
 
               <div className="mb-4 space-y-1 text-sm">
-                <p><strong>Fecha y hora:</strong> {formatearFecha(cita.fecha_hora)}</p>
-                <p><strong>Motivo:</strong> {cita.motivo}</p>
+                <p><strong>Fecha y hora:</strong> {formatearFecha(cita.fecha_hora || cita.fecha || new Date().toISOString())}</p>
+                {cita.motivo && <p><strong>Motivo:</strong> {cita.motivo}</p>}
+                {cita.telefono && <p><strong>Teléfono:</strong> {cita.telefono}</p>}
               </div>
 
               {/* Cambiar estado */}
