@@ -33,10 +33,13 @@ export default function RegisterDoctorPage() {
         setLoading(true);
 
         try {
+            console.log('Datos enviados:', formData);
             await registerDoctor(formData);
             // Redirect is handled in context
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al registrarse');
+            console.error('Error completo:', err);
+            const errorMessage = err.response?.data?.message || err.message || 'Error al registrarse';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

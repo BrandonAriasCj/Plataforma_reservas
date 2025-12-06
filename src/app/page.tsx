@@ -2,24 +2,30 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user && mounted) {
       if (user.roleId === 2) {
         router.push('/medicos/dashboard');
       } else {
         router.push('/paciente/dashboard');
       }
     }
-  }, [isAuthenticated, isLoading, user, router]);
+  }, [isAuthenticated, isLoading, user, router, mounted]);
 
-  if (isLoading) {
+  // No renderizar nada hasta que el componente esté montado en el cliente
+  if (!mounted || isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
   }
 

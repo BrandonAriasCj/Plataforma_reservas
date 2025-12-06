@@ -19,12 +19,29 @@ export const authService = {
     },
 
     registerDoctor: async (data: RegisterDoctorPayload): Promise<AuthResponse> => {
-        return await apiClient.post<AuthResponse>(`${AUTH_BASE}/register-medico`, data);
+        // Backend espera POST /auth/register-medico
+        const payload = {
+            email: data.email,
+            name: data.name,
+            apellido: data.apellido,
+            telefono: data.telefono,
+            especialidad: data.especialidad,
+            descripcion: data.descripcion || '',
+            password: data.password
+        };
+        try {
+            const response = await apiClient.post<AuthResponse>(`${AUTH_BASE}/register-medico`, payload);
+            return response;
+        } catch (error: any) {
+            console.error('Error en registro de médico:', error.response?.data || error.message);
+            throw error;
+        }
     },
 
     getMe: async (): Promise<User> => {
-        const response = await apiClient.get<{ user: User }>(`${AUTH_BASE}/me`);
-        return response.user;
+        const response = await apiClient.get<any>(`${AUTH_BASE}/me`);
+        // El backend puede devolver user directamente o en response.user
+        return response.user || response.data || response;
     },
 
     loginWithGoogle: () => {

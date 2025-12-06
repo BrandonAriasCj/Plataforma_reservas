@@ -61,14 +61,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(true);
         try {
             const response = await authService.login(credentials);
+            console.log('Login response:', response);
             if (response.token) {
                 localStorage.setItem('auth_token', response.token);
                 apiClient.setToken(response.token);
+                console.log('User data set:', response.user);
                 setUser(response.user);
 
                 // Redirect based on role
                 if (response.user.roleId === 2) { // Medico
-                    // You might want to redirect doctors to a dashboard
                     router.push('/medicos/dashboard');
                 } else {
                     router.push('/paciente/dashboard');

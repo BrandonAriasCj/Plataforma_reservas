@@ -1,13 +1,18 @@
 export interface User {
-    userId: string;
+    userId?: string;
+    id?: string;
     email: string;
     roleId: number;
+    medico_id?: number;
+    patient_id?: number;
     rol_nombre?: "PACIENTE" | "MEDICO";
-    name: string;
+    name?: string;
+    nombre?: string;
     apellido?: string;
     telefono?: string;
     especialidad?: string;
     descripcion?: string;
+    [key: string]: any; // Para capturar cualquier otro campo del backend
 }
 
 export interface AuthResponse {
